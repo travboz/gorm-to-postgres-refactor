@@ -29,12 +29,9 @@ func main() {
 		os.Exit(1)
 	}
 
-	// Defer a call to db.Close() so that the connection pool is closed before the
-	// main() function exits.
 	defer db.Close()
 
 	env := env.NewEnv(db)
-
 	routes := routes(env)
 
 	server := &http.Server{
@@ -46,10 +43,8 @@ func main() {
 
 	}
 
-	// Log server start message
 	log.Println("Server is running on port 8000")
 
-	// Start server
 	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("Failed to start server: %v", err)
 	}

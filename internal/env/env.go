@@ -3,7 +3,7 @@ package env
 import "database/sql"
 
 type Env struct {
-	db *sql.DB
+	DB *sql.DB
 }
 
 func NewEnv(db *sql.DB) *Env {

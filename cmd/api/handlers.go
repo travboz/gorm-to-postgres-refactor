@@ -65,15 +65,20 @@ func CreateQuest(env *env.Env) http.HandlerFunc {
 			return
 		}
 
-		quest := &models.Quest{
+		quest := models.Quest{
 			Title:       input.Title,
 			Description: input.Description,
 			Reward:      input.Reward,
 		}
 
-		env.db.Create(quest)
+		err := models.CreateNewQuest(env.DB, quest)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			return
+		}
 
 		w.Header().Set(utils.ContentType, utils.ContentJSON)
+		w.WriteHeader(http.StatusCreated)
 		json.NewEncoder(w).Encode(quest)
 	}
 }
