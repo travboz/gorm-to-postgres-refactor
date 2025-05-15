@@ -11,17 +11,23 @@ import (
 	"github.com/travboz/go-quest/internal/utils"
 )
 
-// func GetAllQuests(env *env.Env) http.HandlerFunc {
+func GetAllQuests(env *env.Env) http.HandlerFunc {
 
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		w.Header().Set(utils.ContentType, utils.ContentJSON)
+	return func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set(utils.ContentType, utils.ContentJSON)
 
-// 		var quests []models.Quest
-// 		models.DB.Find(&quests)
+		quests, err := models.GetAllQuests(env.DB)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, err.Error())
+			return
+		}
 
-// 		json.NewEncoder(w).Encode(quests)
-// 	}
-// }
+		err = utils.RespondWithJSON(w, http.StatusOK, quests)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+	}
+}
 
 // func GetQuestById(env *env.Env) http.HandlerFunc {
 // 	return func(w http.ResponseWriter, r *http.Request) {
@@ -77,9 +83,9 @@ func CreateQuest(env *env.Env) http.HandlerFunc {
 			return
 		}
 
-		w.Header().Set(utils.ContentType, utils.ContentJSON)
-		w.WriteHeader(http.StatusCreated)
-		json.NewEncoder(w).Encode(quest)
+		if err = utils.RespondWithJSON(w, http.StatusCreated, quest); err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
 	}
 }
 

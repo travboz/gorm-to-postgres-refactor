@@ -35,3 +35,38 @@ func CreateNewQuest(db *sql.DB, quest Quest) error {
 
 	return nil
 }
+
+func GetAllQuests(db *sql.DB) ([]*Quest, error) {
+	query := `
+		SELECT id, title, description, reward, created_at, updated_at
+		FROM quests;`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	rows, err := db.QueryContext(ctx, query)
+	if err != nil {
+		return nil, err
+	}
+
+	defer rows.Close()
+
+	var quests []*Quest
+
+	for rows.Next() {
+		var q Quest
+
+		err := rows.Scan(&q.ID, &q.Title, &q.Description, &q.Reward, &q.CreatedAt, &q.UpdatedAt)
+		if err != nil {
+			return nil, err
+		}
+
+		quests = append(quests, &q)
+	}
+	if err = rows.Err(); err != nil {
+		return nil, err
+	}
+
+	return quests, nil
+
+}

@@ -12,11 +12,11 @@ func routes(env *env.Env) http.Handler {
 	router := chi.NewRouter()
 	router.Use(middleware.Logger)
 	router.Group(func(r chi.Router) {
-		// router.Get("/quests", GetAllQuests(env))
-		// router.Get("/quest/{id}", GetQuestById(env))
-		router.Post("/quest", CreateQuest(env))
-		// router.Put("/quest/{id}", UpdateQuest(env))
-		// router.Delete("/quest/{id}", DeleteQuestById(env))
+		router.Post("/quests", CreateQuest(env))
+		router.Get("/quests", GetAllQuests(env))
+		// router.Get("/quests/{id}", GetQuestById(env))
+		// router.Put("/quests/{id}", UpdateQuest(env))
+		// router.Delete("/quests/{id}", DeleteQuestById(env))
 	})
 
 	return router
