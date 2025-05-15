@@ -1,20 +1,41 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
 	"time"
 
 	"github.com/joho/godotenv"
-	"github.com/travboz/go-quest/controllers"
-	"github.com/travboz/go-quest/models"
+	"github.com/travboz/go-quest/internal/env"
 )
 
 func main() {
 	godotenv.Load()
 
-	routes := controllers.New()
-	models.ConnectDatabase()
+	dsn := fmt.Sprintf(
+		"host=%s user=%s password=%s dbname=%s port=%s sslmode=disable",
+		os.Getenv("DB_HOST"),
+		os.Getenv("DB_USER"),
+		os.Getenv("DB_PASSWORD"),
+		os.Getenv("DB_NAME"),
+		os.Getenv("DB_PORT"),
+	)
+
+	db, err := ConnectToDB(dsn)
+	if err != nil {
+		log.Println(err)
+		os.Exit(1)
+	}
+
+	// Defer a call to db.Close() so that the connection pool is closed before the
+	// main() function exits.
+	defer db.Close()
+
+	env := env.NewEnv(db)
+
+	routes := routes(env)
 
 	server := &http.Server{
 		Addr:         "0.0.0.0:8000",

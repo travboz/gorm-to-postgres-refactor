@@ -1,6 +1,9 @@
 package models
 
-import "time"
+import (
+	"database/sql"
+	"time"
+)
 
 type Quest struct {
 	ID          uint      `json:"id" gorm:"primary_key"`
@@ -9,4 +12,8 @@ type Quest struct {
 	Reward      int       `json:"reward"`
 	CreatedAt   time.Time `json:"created_at"`
 	UpdatedAt   time.Time `json:"updated_at"`
+}
+
+func CreateNewQuest(db *sql.DB, quest Quest) error {
+	return nil
 }
