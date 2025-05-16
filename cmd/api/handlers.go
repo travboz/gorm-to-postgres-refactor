@@ -99,53 +99,68 @@ func CreateQuest(env *env.Env) http.HandlerFunc {
 	}
 }
 
-// type UpdateQuestPayload struct {
-// 	Title       string `json:"title" validate:"required"`
-// 	Description string `json:"description" validate:"required"`
-// 	Reward      int    `json:"reward" validate:"required"`
-// }
+type UpdateQuestPayload struct {
+	Title       string `json:"title" validate:"required"`
+	Description string `json:"description" validate:"required"`
+	Reward      int    `json:"reward" validate:"required"`
+}
 
-// func UpdateQuest(env *env.Env) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		w.Header().Set(utils.ContentType, utils.ContentJSON)
+func UpdateQuest(env *env.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-// 		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-// 		if err != nil {
-// 			utils.RespondWithError(w, http.StatusInternalServerError, "unable to parse id")
-// 			return
-// 		}
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "unable to parse id")
+			return
+		}
 
-// 		// Getting quest to update
-// 		var quest models.Quest
+		// Getting quest to update
+		quest, err := models.GetQuestByID(env.DB, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, models.ErrRecordNotFound):
+				utils.RespondWithError(w, http.StatusNotFound, "quest not found")
+			default:
+				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			}
 
-// 		if err := models.DB.Where("id = ?", id).First(&quest).Error; err != nil {
-// 			utils.RespondWithError(w, http.StatusNotFound, "quest not found")
-// 			return
-// 		}
+			return
+		}
 
-// 		// Reading the JSON update payload
-// 		var input UpdateQuestPayload
+		// Reading the JSON update payload
+		var input UpdateQuestPayload
 
-// 		body, _ := io.ReadAll(r.Body)
-// 		_ = json.Unmarshal(body, &input)
+		body, _ := io.ReadAll(r.Body)
+		_ = json.Unmarshal(body, &input)
 
-// 		validate = validator.New()
-// 		if err := validate.Struct(input); err != nil {
-// 			utils.RespondWithError(w, http.StatusBadRequest, "validation Error")
-// 			return
-// 		}
+		validate = validator.New()
+		if err := validate.Struct(input); err != nil {
+			utils.RespondWithError(w, http.StatusBadRequest, "validation error")
+			return
+		}
 
-// 		// Updating values
-// 		quest.Title = input.Title
-// 		quest.Description = input.Description
-// 		quest.Reward = input.Reward
+		// Updating values
+		quest.Title = input.Title
+		quest.Description = input.Description
+		quest.Reward = input.Reward
 
-// 		// Saving the update in our db
-// 		models.DB.Save(&quest)
+		// Saving the update in our db
+		err = models.UpdateQuest(env.DB, quest)
+		if err != nil {
+			switch {
+			case errors.Is(err, models.ErrEditConflict):
+				utils.RespondWithError(w, http.StatusConflict, models.ErrEditConflict.Error())
+			default:
+				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			}
+			return
+		}
 
-// 		json.NewEncoder(w).Encode(quest)
-// 	}
-// }
+		if err = utils.RespondWithJSON(w, http.StatusAccepted, quest); err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+	}
+}
 
 // func DeleteQuestById(env *env.Env) http.HandlerFunc {
 // 	return func(w http.ResponseWriter, r *http.Request) {

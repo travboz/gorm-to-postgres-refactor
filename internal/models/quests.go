@@ -19,7 +19,7 @@ type Quest struct {
 
 func CreateNewQuest(db *sql.DB, quest Quest) error {
 	query := `
-		INSERT INTO quests (title, description, reward) 
+		INSERT INTO quests (title, description, reward)
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at, version;`
 
@@ -108,4 +108,38 @@ func GetQuestByID(db *sql.DB, id int64) (*Quest, error) {
 
 	return &q, nil
 
+}
+
+func UpdateQuest(db *sql.DB, quest *Quest) error {
+	query := `
+	UPDATE quests
+	SET title = $1, description = $2, reward = $3, version = version + 1
+	WHERE id = $4 AND version = $5
+	RETURNING version;
+	`
+
+	// Create an args slice containing the values for the placeholder parameters.
+	args := []any{
+		quest.Title,
+		quest.Description,
+		quest.Reward,
+		quest.ID,
+		quest.Version,
+	}
+
+	// giving the psql query 3 seconds to complete
+	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	defer cancel()
+
+	err := db.QueryRowContext(ctx, query, args...).Scan(&quest.Version)
+	if err != nil {
+		switch {
+		case errors.Is(err, sql.ErrNoRows):
+			return ErrEditConflict
+		default:
+			return err
+		}
+	}
+
+	return err
 }
