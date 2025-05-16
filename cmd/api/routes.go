@@ -14,7 +14,7 @@ func routes(env *env.Env) http.Handler {
 	router.Group(func(r chi.Router) {
 		router.Post("/quests", CreateQuest(env))
 		router.Get("/quests", GetAllQuests(env))
-		// router.Get("/quests/{id}", GetQuestById(env))
+		router.Get("/quests/{id}", GetQuestById(env))
 		// router.Put("/quests/{id}", UpdateQuest(env))
 		// router.Delete("/quests/{id}", DeleteQuestById(env))
 	})

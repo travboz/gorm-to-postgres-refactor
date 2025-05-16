@@ -2,9 +2,12 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
+	"strconv"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/go-playground/validator/v10"
 	"github.com/travboz/go-quest/internal/env"
 	"github.com/travboz/go-quest/internal/models"
@@ -29,26 +32,33 @@ func GetAllQuests(env *env.Env) http.HandlerFunc {
 	}
 }
 
-// func GetQuestById(env *env.Env) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		w.Header().Set(utils.ContentType, utils.ContentJSON)
+func GetQuestById(env *env.Env) http.HandlerFunc {
 
-// 		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-// 		if err != nil {
-// 			utils.RespondWithError(w, http.StatusInternalServerError, "unable to parse id")
-// 			return
-// 		}
+	return func(w http.ResponseWriter, r *http.Request) {
 
-// 		var quest models.Quest
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "unable to parse id")
+			return
+		}
 
-// 		if err := models.DB.Where("id = ?", id).First(&quest).Error; err != nil {
-// 			utils.RespondWithError(w, http.StatusNotFound, "Quest not found")
-// 			return
-// 		}
+		quest, err := models.GetQuestByID(env.DB, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, models.ErrRecordNotFound):
+				utils.RespondWithError(w, http.StatusNotFound, "quest not found")
+			default:
+				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			}
 
-// 		json.NewEncoder(w).Encode(quest)
-// 	}
-// }
+			return
+		}
+
+		if err = utils.RespondWithJSON(w, http.StatusOK, quest); err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+	}
+}
 
 var validate *validator.Validate
 
