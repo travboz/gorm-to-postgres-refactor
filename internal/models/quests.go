@@ -118,7 +118,6 @@ func UpdateQuest(db *sql.DB, quest *Quest) error {
 	RETURNING version;
 	`
 
-	// Create an args slice containing the values for the placeholder parameters.
 	args := []any{
 		quest.Title,
 		quest.Description,
@@ -127,8 +126,7 @@ func UpdateQuest(db *sql.DB, quest *Quest) error {
 		quest.Version,
 	}
 
-	// giving the psql query 3 seconds to complete
-	ctx, cancel := context.WithTimeout(context.Background(), 3*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
 
 	err := db.QueryRowContext(ctx, query, args...).Scan(&quest.Version)
@@ -142,4 +140,34 @@ func UpdateQuest(db *sql.DB, quest *Quest) error {
 	}
 
 	return err
+}
+
+func DeleteQuest(db *sql.DB, id int64) error {
+	query := `
+		DELETE FROM quests
+		WHERE id = $1;`
+
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+
+	result, err := db.ExecContext(ctx, query, id)
+	if err != nil {
+		return err
+	}
+
+	// Call the RowsAffected() method on the sql.Result object to get the number of rows
+	// affected by the query.
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	// If no rows were affected, we know that the movies table didn't contain a record
+	// with the provided ID at the moment we tried to delete it. In that case we
+	// return an ErrRecordNotFound error.
+	if rowsAffected == 0 {
+		return ErrRecordNotFound
+	}
+
+	return nil
 }

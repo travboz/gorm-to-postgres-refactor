@@ -162,27 +162,29 @@ func UpdateQuest(env *env.Env) http.HandlerFunc {
 	}
 }
 
-// func DeleteQuestById(env *env.Env) http.HandlerFunc {
-// 	return func(w http.ResponseWriter, r *http.Request) {
-// 		w.Header().Set(utils.ContentType, utils.ContentJSON)
+func DeleteQuestById(env *env.Env) http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
 
-// 		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
-// 		if err != nil {
-// 			utils.RespondWithError(w, http.StatusInternalServerError, "unable to parse id")
-// 			return
-// 		}
+		id, err := strconv.ParseInt(chi.URLParam(r, "id"), 10, 64)
+		if err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, "unable to parse id")
+			return
+		}
 
-// 		// Getting quest to update
-// 		var quest models.Quest
+		err = models.DeleteQuest(env.DB, id)
+		if err != nil {
+			switch {
+			case errors.Is(err, models.ErrRecordNotFound):
+				utils.RespondWithError(w, http.StatusNotFound, "quest not found")
+			default:
+				utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+			}
 
-// 		if err := models.DB.Where("id = ?", id).First(&quest).Error; err != nil {
-// 			utils.RespondWithError(w, http.StatusNotFound, "Quest not found")
-// 			return
-// 		}
+			return
+		}
 
-// 		models.DB.Delete(&quest)
-
-// 		w.WriteHeader(http.StatusNoContent)
-// 		json.NewEncoder(w).Encode(quest)
-// 	}
-// }
+		if err = utils.RespondWithJSON(w, http.StatusAccepted, map[string]string{"message": "quest deleted successfully"}); err != nil {
+			utils.RespondWithError(w, http.StatusInternalServerError, err.Error())
+		}
+	}
+}
