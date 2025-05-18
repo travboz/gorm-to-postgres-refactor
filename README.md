@@ -4,7 +4,7 @@
 </p>
 
 
-A quest-tracking API built with Go, Chi, and PostgreSQL. This project focuses on clean architecture by decoupling components, using dependency injection, and applying the repository pattern to enhance maintainability and scalability. It supports basic CRUD operations for managing quest data via an HTTP server and uses Docker Compose for service orchestration.
+A quest-tracking API built with Go, Chi, and PostgreSQL. This project focuses on separated layers by decoupling components, and using dependency injection (through the use of closures), to enhance maintainability and scalability. It supports basic CRUD operations for managing quest data via an HTTP server and uses Docker Compose for service orchestration.
 
 Commit history includes multiple changes to the code. 
 
@@ -49,7 +49,6 @@ See `.env.example` for an example `.env` file.
 | `POST`   | `/quests`         | Create a new quest in the game      |
 | `PUT`    | `/quests/:id`     | Update a quest with the specified ID|
 | `DELETE` | `/quests/:id`     | Delete a quest with the specified ID|
-
 
 
 ## Example usage
