@@ -7,6 +7,10 @@ import (
 	"time"
 )
 
+var (
+	dbTimeout = 5 * time.Second
+)
+
 type Quest struct {
 	ID          int64      `json:"id"`
 	Title       string     `json:"title"`
@@ -23,7 +27,7 @@ func CreateNewQuest(db *sql.DB, quest Quest) error {
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at, version;`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	args := []any{quest.Title, quest.Description, quest.Reward}
@@ -43,7 +47,7 @@ func GetAllQuests(db *sql.DB) ([]*Quest, error) {
 		SELECT id, title, description, reward, created_at, updated_at
 		FROM quests;`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	rows, err := db.QueryContext(ctx, query)
@@ -79,7 +83,7 @@ func GetQuestByID(db *sql.DB, id int64) (*Quest, error) {
 		FROM quests
 		WHERE id = $1;`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	var q Quest
@@ -126,7 +130,7 @@ func UpdateQuest(db *sql.DB, quest *Quest) error {
 		quest.Version,
 	}
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	err := db.QueryRowContext(ctx, query, args...).Scan(&quest.Version)
@@ -147,7 +151,7 @@ func DeleteQuest(db *sql.DB, id int64) error {
 		DELETE FROM quests
 		WHERE id = $1;`
 
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), dbTimeout)
 	defer cancel()
 
 	result, err := db.ExecContext(ctx, query, id)

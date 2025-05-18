@@ -4,7 +4,7 @@
 </p>
 
 
-A quest-tracking API built with Go, Chi, and PostgreSQL. This project focuses on separated layers by decoupling components, and using dependency injection (through the use of closures), to enhance maintainability and scalability. It supports basic CRUD operations for managing quest data via an HTTP server and uses Docker Compose for service orchestration.
+A simple quest-tracking API built with Go, Chi, and PostgreSQL. This project focuses on separated layers by decoupling components, and using dependency injection (through the use of closures), to enhance maintainability and scalability. It supports basic CRUD operations for managing quest data via an HTTP server and uses Docker Compose for service orchestration.
 
 Commit history includes multiple changes to the code. 
 
@@ -18,8 +18,18 @@ TBD
 - Docker
 - Docker Compose
 - Go (1.22+ recommended)
+- [Go Migrate](https://github.com/golang-migrate/migrate) - (required for database migrations)
 
-## Installation
+## Installation 
+
+### `.env` file
+This server uses a `.env` file for basic configuration.
+See `.env.example` for an example `.env` file.
+
+The `makefile` requires the environment file to be named ".env" to function properly. Rename the `.env.example` file to `.env`. 
+
+
+### Standard install
 
 1. Clone this repository:
    ```sh
@@ -30,18 +40,32 @@ TBD
     ```sh
     make compose-up
    ```
-3. Run server:
+3. Run database migrations:
+   ```sh
+   make migrate/up
+   ```
+4. Start server:
     ```sh
     make run
     ```
-4. Navigate to `http://localhost:8000` and call an endpoint
+5. Navigate to `http://localhost:8000` and call an endpoint
 
-### `.env` file
-This server uses a `.env` file for basic configuration.
-See `.env.example` for an example `.env` file.
+### Expedited install (one command run)
 
-## API endpoints
+1. Clone this repository:
+   ```sh
+   git clone https://github.com/travboz/gorm-to-postgres-refactor.git
+   cd gorm-to-postgres-refactor
+   ```
+2. Start server (runs compose, and migrations):
+    ```sh
+    make quick-run
+    ```
+3. Navigate to `http://localhost:8000` and call an endpoint
 
+## API
+
+### Endpoints
 | Method   | Endpoint          | Description                         |
 |----------|-------------------|-------------------------------------|
 | `GET`    | `/quests`         | Retrieve all quests in the game     |
@@ -51,7 +75,7 @@ See `.env.example` for an example `.env` file.
 | `DELETE` | `/quests/:id`     | Delete a quest with the specified ID|
 
 
-## Example usage
+### Example usage
 
 TBD
 

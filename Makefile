@@ -8,6 +8,10 @@ MIGRATIONS_PATH=./migrations
 run:
 	@go run $(ENTRYPOINT_DIR)/*.go
 
+setup: compose-up migrate/up
+
+quick-run: setup run
+
 # docker commands
 
 .PHONY: compose-up
